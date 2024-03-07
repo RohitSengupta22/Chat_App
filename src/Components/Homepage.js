@@ -10,6 +10,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import Card from 'react-bootstrap/Card';
 
+
 const Homepage = () => {
     
     const authToken = localStorage.getItem('token');
@@ -20,6 +21,11 @@ const Homepage = () => {
     const navigate = useNavigate();
     const [recipients, setRecipients] = useState([]);
     const [user,setUser] = useState()
+    
+
+
+
+   
 
  
 
@@ -90,6 +96,7 @@ const Homepage = () => {
         setChatwith(user==initiator ? reciever : initiator);
         setChatID(id)
         navigate(`/Chat/${Name}`);
+       
     }
 
    

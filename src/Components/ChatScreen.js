@@ -9,6 +9,7 @@ import Container from 'react-bootstrap/Container';
 import Button from 'react-bootstrap/Button';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
+import io from 'socket.io-client';
 
 const ChatScreen = () => {
     const BASE_URL = 'http://localhost:3002/api';
@@ -18,9 +19,40 @@ const ChatScreen = () => {
     const [socketId, setSocketId] = useState();
     const [message, setMessage] = useState('');
     const [messageArr, setMessageArr] = useState([])
-    const socket = useContext(SocketContext); // Use the socket from SocketProvider
+     // Use the socket from SocketProvider
     const [recipientID, setRecipientID] = useState(null);
     const [user, setUser] = useState()
+    const [userMail, setUserMail] = useState()
+    const socket = io('http://localhost:3002');
+    const [realTimeMessages, setRealTimeMessages] = useState([]);
+
+    useEffect(() => {
+        socket.on("newMessage", (newMessage) => {
+            // Update messageArr with the new message
+            setMessageArr((prevMessages) => [...prevMessages, newMessage]);
+        });
+    
+        // Cleanup function to remove the listener when the component unmounts
+        return () => {
+            socket.off("newMessage");
+        };
+    }, []); // Empty dependency array ensures this runs only once
+    console.log(messageArr)
+
+    
+
+    // Combine initial messages with real-time messages
+  
+   
+
+   
+
+
+    useEffect(()=>{
+        socket.emit("JoinChat",{ chatID})
+    },[chatID])
+
+   
 
     async function sendMessage() {
         const response = await axios.post(`${BASE_URL}/send/${chatwith}`, { message }, {
@@ -28,17 +60,22 @@ const ChatScreen = () => {
                 'auth-token': authToken
             }
         });
-
-        console.log(response.data.chat.Messages)
-        setMessageArr(response.data.chat.Messages)
-        setMessage('')
-
-
-
-        // console.log(response.data.newChat)
-
-
+    
+        console.log(response.data.chat);
+        setMessageArr(response.data.chat.Messages.slice(0,response.data.chat.Messages.length-1));
+        setMessage('');
+    
+        const latestMessage = response.data.chat
+        // Get the last message
+    
+        // Emit both chatID and latestMessage to the server
+        socket.emit("messageSent", latestMessage);
     }
+    
+    
+
+    
+
 
     useEffect(() => {
 
@@ -65,6 +102,7 @@ const ChatScreen = () => {
 
 
             setUser(response.data.loggedInUser._id)
+            setUserMail(response.data.loggedInUser.Email)
 
         }
 
@@ -97,6 +135,8 @@ const ChatScreen = () => {
                         )
                     })
                 }
+
+               
             </Container>
             <Container style={{ position: 'sticky', bottom: 0, zIndex: 10 }} >
                 <InputGroup className="mb-3">
@@ -114,4 +154,4 @@ const ChatScreen = () => {
     );
 };
 
-export default ChatScreen;
+export default ChatScreen; 
